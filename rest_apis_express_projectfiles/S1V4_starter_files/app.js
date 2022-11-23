@@ -8,6 +8,17 @@ const app = express();
 //This imports the objects from records.js
 const records = require('./records');
 
+//This function is called and handles all the try/catch
+function asyncHandler(cb){
+  return async (req, res, next)=>{
+    try {
+      await cb(req,res, next);
+    } catch(err){
+      next(err);
+    }
+  };
+}
+
 //Express middleware --> explains that we're expecting requests to
 //come in as JSON
 app.use(express.json());
@@ -47,41 +58,32 @@ app.get('/quotes/:id', async(req, res) => {
 });
 
 //Send a POST request to /quotes to CREATE a new quote
-app.post('/quotes', async (req, res) => {
-  throw new Error("Oh NOOOO something went wrong!");
-  try{
-    if(req.body.quote && req.body.author) {
-      const quote = await records.createQuote({
-        quote: req.body.quote,
-        author: req.body.author
-      });
-      res.status(201).json(quote);
-    } else {
-      res.status(400).json({ message: "Quote & Author are required."})
-    }
-  } catch(err) {
-      res.status(500).json({ message: err.message });
+app.post('/quotes', asyncHandler( async (req, res) => {
+  if(req.body.quote && req.body.author) {
+    const quote = await records.createQuote({
+      quote: req.body.quote,
+      author: req.body.author
+    });
+    res.status(201).json(quote);
+  } else {
+    res.status(400).json({ message: "Quote & Author are required."})
   }
-});
-//Send a PUT request to /quotes/:id to UPDATE (edit) a quote
-app.put('/quotes/:id', async(req, res) => {
-  try{
-    const quote = await records.getQuote(req.params.id);
-    if(quote) {
-      quote.quote = req.body.quote;
-      quote.author = req.body.author;
+}));
 
-      await records.updateQuote(quote);
-      //it's convention not to respond with any message
-      //Must put end to let Express know that we are done!
-      res.status(204).end();
-    } else {
-      res.status(404).json({ message: "Quote not found" });
-    }
-  } catch(err) {
-    res.status(500).json({ message: err.message });
+//Send a PUT request to /quotes/:id to UPDATE (edit) a quote
+app.put('/quotes/:id', asyncHandler( async(req, res) => {
+  const quote = await records.getQuote(req.params.id);
+  if(quote) {
+    quote.quote = req.body.quote;
+    quote.author = req.body.author;
+    await records.updateQuote(quote);
+    //it's convention not to respond with any message
+    //Must put end to let Express know that we are done!
+    res.status(204).end();
+  } else {
+    res.status(404).json({ message: "Quote not found" });
   }
-});
+}));
 //Send a DELETE request to /quotes/:id to DELETE a quote
 app.delete('/quotes/:id', async(req, res) => {
   try{
