@@ -45,6 +45,12 @@ router.get('/quotes/:id', async(req, res) => {
   }
 });
 
+//Send a GET request to /quotes/quote/random to READ (view) a random quote
+router.get('/quotes/quote/random', asyncHandler( async(req, res, next) => {
+  const quote = await records.getRandomQuote();
+  res.json(quote);
+}));
+
 //Send a POST request to /quotes to CREATE a new quote
 router.post('/quotes', asyncHandler( async (req, res) => {
   if(req.body.author && req.body.quote) {
@@ -73,16 +79,11 @@ router.put('/quotes/:id', asyncHandler( async(req, res) => {
   }
 }));
 //Send a DELETE request to /quotes/:id to DELETE a quote
-router.delete('/quotes/:id', async(req, res) => {
-  try{
+router.delete('/quotes/:id', asyncHandler(async(req, res, next) => {
     const quote = await records.getQuote(req.params.id);
     await records.deleteQuote(quote);         //-->How do we know we have to wait?
     res.status(204).end();
-  }catch(err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-//Send a GET request to /quotes/quote/random to READ (view) a random quote
+}));
 
 //exports router 
 module.exports = router;
