@@ -1,6 +1,8 @@
 //Must include the express package
 const express = require("express");
 const router = express.Router();
+//imports records module
+const records = require("./records");
 
 //This function is called and handles all the try/catch
 function asyncHandler(cb){
@@ -19,19 +21,15 @@ function asyncHandler(cb){
  * 2nd argument how do we want to respond.
  * Send a GET request to /quotes to READ a list of quotes
  */
-router.get('/quotes', async(req, res) => {
+router.get('/quotes', asyncHandler(async(req, res) => {
   /**
    *   calls the function getQuotes on the record file and stores
    *   the data in the quotes variable
    */
-  try{
     const quotes = await records.getQuotes();
     //quotes response is converted into JSON format
     res.json(quotes);
-  } catch(err) {
-    res.json({ message: err.message });
-  }
-});
+}));
 
 //Send a GET request to /quotes/:id to READ (view) a quote
 router.get('/quotes/:id', async(req, res) => {
@@ -49,7 +47,7 @@ router.get('/quotes/:id', async(req, res) => {
 
 //Send a POST request to /quotes to CREATE a new quote
 router.post('/quotes', asyncHandler( async (req, res) => {
-  if(req.body.quote && req.body.author) {
+  if(req.body.author && req.body.quote) {
     const quote = await records.createQuote({
       quote: req.body.quote,
       author: req.body.author
@@ -85,3 +83,6 @@ router.delete('/quotes/:id', async(req, res) => {
   }
 });
 //Send a GET request to /quotes/quote/random to READ (view) a random quote
+
+//exports router 
+module.exports = router;

@@ -6,9 +6,6 @@ const express = require('express');
 const app = express();
 const routes = require("./routes");
 
-//This imports the objects from records.js
-const records = require('./records');
-
 //Express middleware --> explains that we're expecting requests to
 //come in as JSON
 app.use(express.json());
@@ -39,8 +36,8 @@ app.use((err, req, res, next) => {
     error: {
       message: err.message
     }
-  })
-})
+  });
+});
 
 
 app.listen(3000, () => console.log('Quote API listening on port 3000!'));
